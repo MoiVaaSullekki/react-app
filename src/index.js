@@ -1,7 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import ToDoList from './todolist.jsx';
+import axios from 'axios'
 
+const promise = axios.get('http://localhost:3001/tasks')
+promise.then(response => {
+  console.log(response)
+})
 
 function App() {
   return(

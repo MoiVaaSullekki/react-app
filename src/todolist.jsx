@@ -1,5 +1,7 @@
-import React, {useState} from 'react'
+import React, {useState, useEffect} from 'react'
+import axios from 'axios'
 import styles from './index.css'
+import taskService from './services/tasks'
 
 function ToDoList(){
 
@@ -7,6 +9,18 @@ function ToDoList(){
     const [newTask, setNewTask] = useState("");
 
 
+
+    useEffect(() => {
+        console.log('effect')
+        
+        taskService
+            .getAll()
+            .then(response => {
+            console.log('promise fulfilled')
+            setTasks(response.data)
+        })
+    }, [])
+    console.log('render', tasks.length, 'tasks')
     
     // Handle input for adding a task
     function handleInputChange(event) {
@@ -17,17 +31,26 @@ function ToDoList(){
     // Add task to list if text-box is not empty
     function addTask(){
         if(newTask.trim() !== ""){
-            const taskID = crypto.randomUUID();
-            setTasks(t => [...t, {id:taskID, text: newTask, finished: false}])
-            setNewTask("")
+            taskService
+            .create({text: newTask, finished: false})
+            .then(response => {
+                console.log(response);
+                setTasks(tasks.concat(response.data));
+                setNewTask('');
+            })
         }
     }
 
     // Add task to list if text-box is not empty and enter is pressed
     function addTaskEnter(event){
         if(newTask.trim() !== "" && event.key === 'Enter'){
-            setTasks(t => [...t, newTask])
-            setNewTask("")
+             taskService
+            .create({text: newTask, finished: false})
+            .then(response => {
+                console.log(response);
+                setTasks(tasks.concat(response.data));
+                setNewTask('');
+            })
         }
     }
 
@@ -57,11 +80,16 @@ function ToDoList(){
 
 
     function toggleFinished(taskID) {
-        const updatedTasks = tasks.map(task =>
-    task.id === taskID ? { ...task, finished: !task.finished } : task);
-        console.log("SEURAAVA ON TOGGLE FINISHED")
-        console.log(tasks)
-        setTasks(updatedTasks)
+        const task = tasks.find(t => t.id === taskID)
+        const changedTask = { ...task, finished: !task.finished }
+
+        taskService
+            .update(taskID, changedTask)
+            .then(response => {
+            setTasks(tasks.map(task => task.id === taskID ? response.data : task))
+        })
+
+
     }
 
 

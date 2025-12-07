@@ -1,0 +1,39 @@
+{
+  "tasks": [
+    {
+      "id": "1",
+      "text": "Walk the dog",
+      "finished": false
+    },
+    {
+      "id": "2",
+      "text": "Walk the camel",
+      "finished": false
+    },
+    {
+      "id": "3",
+      "text": "Walk the horse",
+      "finished": false
+    },
+    {
+      "id": "2f0ab4d6-0add-4442-9c8d-21dcf7ce025e",
+      "text": "asd",
+      "finished": false
+    },
+    {
+      "id": "e3ce",
+      "text": "asd",
+      "finished": false
+    },
+    {
+      "id": "5abe",
+      "text": "guugu",
+      "finished": true
+    },
+    {
+      "id": "55a3",
+      "text": "asdasd",
+      "finished": false
+    }
+  ]
+}
