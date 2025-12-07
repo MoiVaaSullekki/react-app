@@ -1,4 +1,4 @@
-This is a portfolio application done with React.
+This is a portfolio application in progress done with React. Not pretty code and doesnt look the best but every project starts from somewhere :)
 
 The idea is rather simple: a to do list application. Like all  of us.
 
@@ -7,10 +7,10 @@ what functions:
 - deleting a task
 - moving it in priority
 - the starting point of aesthetics (yay!)
-
+- somewhat functional backend done with axios --> currently breaks priority movement of tasks, so in progress?
+- "finished tasks"
+  
 What is on the list?
-- Backend to keep these from deleting every time you refresh :D
-- "finished tasks" and a list of them 
 - sign up and sign in pages
 - adding pictures? Necessary? nope, but I want it :D
 - grouping the tasks to some bigger things like a project or something --> requires: a user, the backend, other things?
