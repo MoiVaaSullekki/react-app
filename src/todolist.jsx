@@ -92,6 +92,7 @@ function ToDoList(){
 
     // Move task up to higher priority on list when up button is pressed
     function moveTaskUp(taskID, pos) {
+
         const upTask = tasks.find(t => t.id === taskID);
         if (!upTask || upTask.index === 0) return; 
 
@@ -123,17 +124,32 @@ function ToDoList(){
     }
 
     // Move task to lower priority on list when down button is pressed
-    function moveTaskDown(taskID){
-        const task = tasks.find(t => t.id === taskID)
-        const changedTask = { ...task, finished: !task.finished }
+    function moveTaskDown(taskID, pos){
+        const downTask = tasks.find(t => t.id === taskID);
+        if (!downTask || downTask.index === tasks.length -1) return; 
 
-        taskService
-            .update(taskID, changedTask)
-            .then(returnedTask => {
-            setTasks(tasks.map(task => task.id === taskID ? returnedTask : task))
+        // find the task above in the listing
+          const belowTask = tasks.find(t => t.index === downTask.index + 1);
+        if (!belowTask) return;
+
+        // update the task indeces
+        const updatedTask = { ...downTask, index: belowTask.index};
+        const updatedAbove = { ...belowTask, index: pos};
+        
+        Promise.all([
+            taskService.update(taskID, updatedTask),
+            taskService.update(updatedAbove.id, updatedAbove)
+        ])
+        .then(([returnedTask, returnedAbove]) => {
+            // update the local states
+            setTasks(tasks.map(t => {
+                if (t.id === taskID) return returnedTask;
+                if (t.id === returnedAbove.id) return returnedAbove;
+                return t;
+            })); 
         })
         .catch(error => {
-            console.log('The note could not be set as finished')
+            console.log('Could not move task down')
         })
     };
 
@@ -199,7 +215,7 @@ function ToDoList(){
                         </button>
                         <button 
                             className='move-button'
-                            onClick={() =>moveTaskDown(task.id)}>
+                            onClick={() =>moveTaskDown(task.id, index)}>
                             Down
                         </button>
                     </li>)}
