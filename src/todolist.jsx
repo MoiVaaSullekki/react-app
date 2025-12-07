@@ -74,41 +74,46 @@ function ToDoList(){
     function deleteTask(taskID){
 
         taskService.taskDeletion(taskID)
-            .then(
-                setTasks(tasks.filter(task => task.id !== taskID)),
-                console.log("deletion done")
-            )
-            .catch(error =>
-                console.log(`Information of ${taskID} has already been removed from server`)
-            )
+            .then( returned => {
+                const updated = tasks.filter(t => t.id !== taskID)
+                .map((task, index) => ({ ...task, index }));
+                
+                // Sync changes back to server
+                updated.forEach(task => {
+                    axios.patch(`http://localhost:3001/tasks/${task.id}`, { index: task.index });
+                });
+                setTasks(updated);
+            })
+        .catch(error =>
+            console.log(`Information of ${taskID} has already been removed from server`)
+        )
 
     }
 
     // Move task up to higher priority on list when up button is pressed
-    function moveTaskUp(taskID) {
-        
+    function moveTaskUp(taskID, pos) {
         const upTask = tasks.find(t => t.id === taskID);
-        console.log(upTask)
-        if (!upTask || upTask.index === 1) return; 
-        const upTaskIndex = tasks.sort((a, b) => a.index - b.index).findIndex(t => t.id === taskID)
-        const aboveTask = tasks[upTaskIndex - 1]
+        if (!upTask || upTask.index === 0) return; 
+
+        // find the task above in the listing
+          const aboveTask = tasks.find(t => t.index === upTask.index - 1);
         if (!aboveTask) return;
 
-        const updatedTask = { ...upTask, index: upTaskIndex - 1};
-        const updatedAbove = { ...aboveTask, index: upTaskIndex};
+        // update the task indeces
+        const updatedTask = { ...upTask, index: aboveTask.index};
+        const updatedAbove = { ...aboveTask, index: pos};
         
-        taskService
-            .update(taskID, updatedTask)
-            .then(returnedTask => {
-                taskService.update(updatedAbove.id, updatedAbove)
-                .then(() => {
-                    // update the local states
-                    setTasks(tasks.map(t => {
-                        if (t.id === taskID) return returnedTask;
-                        if (t.id === updatedAbove) return updatedAbove;
-                        return t;
-                    }));
-                });    
+        Promise.all([
+            taskService.update(taskID, updatedTask),
+            taskService.update(updatedAbove.id, updatedAbove)
+        ])
+        .then(([returnedTask, returnedAbove]) => {
+            // update the local states
+            setTasks(tasks.map(t => {
+                if (t.id === taskID) return returnedTask;
+                if (t.id === returnedAbove.id) return returnedAbove;
+                return t;
+            })); 
         })
         .catch(error => {
             console.log('Could not move task up')
@@ -189,7 +194,7 @@ function ToDoList(){
                         </button>
                         <button 
                             className='move-button'
-                            onClick={() =>moveTaskUp(task.id)}>
+                            onClick={() =>moveTaskUp(task.id, index)}>
                             Up
                         </button>
                         <button 
