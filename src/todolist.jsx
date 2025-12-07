@@ -8,35 +8,44 @@ function ToDoList(){
     const [tasks, setTasks] = useState([]);
     const [newTask, setNewTask] = useState("");
 
-
-
     useEffect(() => {
         console.log('effect')
         
         taskService
             .getAll()
-            .then(response => {
+            .then(initialTasks => {
             console.log('promise fulfilled')
-            setTasks(response.data)
+            setTasks(initialTasks)
+        })
+        .catch(error => {
+            console.log('fail')
         })
     }, [])
     console.log('render', tasks.length, 'tasks')
     
     // Handle input for adding a task
     function handleInputChange(event) {
-        console.log(tasks)
         setNewTask(event.target.value);
     }
 
     // Add task to list if text-box is not empty
     function addTask(){
+
         if(newTask.trim() !== ""){
+            const maxIndex = tasks.length
+            ? Math.max(...tasks.map(t => t.index))
+            : 0;
+
+            console.log(maxIndex)
             taskService
-            .create({text: newTask, finished: false})
-            .then(response => {
-                console.log(response);
-                setTasks(tasks.concat(response.data));
+            .create({text: newTask, finished: false, index: maxIndex+1})
+            .then(returnedTask => {
+                console.log(returnedTask);
+                setTasks(tasks.concat(returnedTask));
                 setNewTask('');
+            })
+            .catch(error => {
+                console.log('The note could not be created')
             })
         }
     }
@@ -44,40 +53,36 @@ function ToDoList(){
     // Add task to list if text-box is not empty and enter is pressed
     function addTaskEnter(event){
         if(newTask.trim() !== "" && event.key === 'Enter'){
-             taskService
-            .create({text: newTask, finished: false})
-            .then(response => {
-                console.log(response);
-                setTasks(tasks.concat(response.data));
+            const maxIndex = tasks.length
+            ? Math.max(...tasks.map(t => t.index))
+            : 0;
+
+            taskService
+            .create({text: newTask, finished: false, index: maxIndex+1})
+            .then(returnedTask => {
+                console.log(returnedTask);
+                setTasks(tasks.concat(returnedTask));
                 setNewTask('');
+            })
+            .catch(error => {
+                console.log('The note could not be created')
             })
         }
     }
 
     // Delete task at index when delete-button is pressed
     function deleteTask(taskID){
-        const updatedTasks = tasks.filter((task) => task.id !== taskID);
-        setTasks(updatedTasks);
-    }
 
-    // Move task up to higher priority on list when up button is pressed
-    function moveTaskUp(index){
-        if (index > 0){
-            const updatedTasks = [...tasks];
-            [updatedTasks[index], updatedTasks[index -1]] = [updatedTasks[index-1], updatedTasks[index]];
-            setTasks(updatedTasks);
-        }
-    }
+        taskService.taskDeletion(taskID)
+            .then(
+                setTasks(tasks.filter(task => task.id !== taskID)),
+                console.log("deletion done")
+            )
+            .catch(error =>
+                console.log(`Information of ${taskID} has already been removed from server`)
+            )
 
-    // Move task to lower priority on list when down button is pressed
-    function moveTaskDown(index) {
-        if (index < tasks.length - 1){
-            const updatedTasks = [...tasks];
-            [updatedTasks[index], updatedTasks[index+1]] = [updatedTasks[index+1], updatedTasks[index]];
-            setTasks(updatedTasks);
-        }
     }
-
 
     function toggleFinished(taskID) {
         const task = tasks.find(t => t.id === taskID)
@@ -85,8 +90,11 @@ function ToDoList(){
 
         taskService
             .update(taskID, changedTask)
-            .then(response => {
-            setTasks(tasks.map(task => task.id === taskID ? response.data : task))
+            .then(returnedTask => {
+            setTasks(tasks.map(task => task.id === taskID ? returnedTask : task))
+        })
+        .catch(error => {
+            console.log('The note could not be set as finished')
         })
 
 
@@ -118,7 +126,7 @@ function ToDoList(){
             </div>
 
             <o1>
-                {tasks.filter(t => !t.finished).map((task, index)=>
+                {tasks.filter(t => !t.finished).sort((a, b) => a.index - b.index).map((task, index)=>
                     <li key={index}>
                         <span className='text'>{task.text}</span>
                         <input 
@@ -130,20 +138,10 @@ function ToDoList(){
                             onClick={() => deleteTask(task.id)}>
                             Delete
                         </button>
-                        <button 
-                            className='move-button'
-                            onClick={() =>moveTaskUp(index)}>
-                            Up
-                        </button>
-                        <button 
-                            className='move-button'
-                            onClick={() =>moveTaskDown(index)}>
-                            Down
-                        </button>
                     </li>)}
             </o1>
             <h3>Finished Tasks</h3>
-            <o1>
+            <o1 className='finished-tasks'>
                 {tasks.filter(t => t.finished).map((task, index)=>
                     <li key={index}>
                         <span className='text'>{task.text}</span>
