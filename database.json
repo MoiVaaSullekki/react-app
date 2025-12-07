@@ -4,25 +4,19 @@
       "id": "2",
       "text": "Walk the camel",
       "finished": false,
-      "index": 1
+      "index": 0
     },
     {
       "id": "3",
       "text": "Walk the horse",
       "finished": false,
-      "index": 3
-    },
-    {
-      "id": "1a7d",
-      "text": "asd",
-      "finished": false,
-      "index": 3
+      "index": 2
     },
     {
       "id": "ea12",
       "text": "iuhsd",
       "finished": false,
-      "index": 4
+      "index": 1
     }
   ]
 }

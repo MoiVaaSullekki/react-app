@@ -84,6 +84,55 @@ function ToDoList(){
 
     }
 
+    // Move task up to higher priority on list when up button is pressed
+    function moveTaskUp(taskID) {
+        
+        const upTask = tasks.find(t => t.id === taskID);
+        console.log(upTask)
+        if (!upTask || upTask.index === 1) return; 
+        const upTaskIndex = tasks.sort((a, b) => a.index - b.index).findIndex(t => t.id === taskID)
+        const aboveTask = tasks[upTaskIndex - 1]
+        if (!aboveTask) return;
+
+        const updatedTask = { ...upTask, index: upTaskIndex - 1};
+        const updatedAbove = { ...aboveTask, index: upTaskIndex};
+        
+        taskService
+            .update(taskID, updatedTask)
+            .then(returnedTask => {
+                taskService.update(updatedAbove.id, updatedAbove)
+                .then(() => {
+                    // update the local states
+                    setTasks(tasks.map(t => {
+                        if (t.id === taskID) return returnedTask;
+                        if (t.id === updatedAbove) return updatedAbove;
+                        return t;
+                    }));
+                });    
+        })
+        .catch(error => {
+            console.log('Could not move task up')
+        })
+        
+        
+    }
+
+    // Move task to lower priority on list when down button is pressed
+    function moveTaskDown(taskID){
+        const task = tasks.find(t => t.id === taskID)
+        const changedTask = { ...task, finished: !task.finished }
+
+        taskService
+            .update(taskID, changedTask)
+            .then(returnedTask => {
+            setTasks(tasks.map(task => task.id === taskID ? returnedTask : task))
+        })
+        .catch(error => {
+            console.log('The note could not be set as finished')
+        })
+    };
+
+
     function toggleFinished(taskID) {
         const task = tasks.find(t => t.id === taskID)
         const changedTask = { ...task, finished: !task.finished }
@@ -137,6 +186,16 @@ function ToDoList(){
                             className='delete-button'
                             onClick={() => deleteTask(task.id)}>
                             Delete
+                        </button>
+                        <button 
+                            className='move-button'
+                            onClick={() =>moveTaskUp(task.id)}>
+                            Up
+                        </button>
+                        <button 
+                            className='move-button'
+                            onClick={() =>moveTaskDown(task.id)}>
+                            Down
                         </button>
                     </li>)}
             </o1>
