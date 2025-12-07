@@ -7,15 +7,18 @@ function ToDoList(){
     const [newTask, setNewTask] = useState("");
 
 
+    
     // Handle input for adding a task
     function handleInputChange(event) {
+        console.log(tasks)
         setNewTask(event.target.value);
     }
 
     // Add task to list if text-box is not empty
     function addTask(){
         if(newTask.trim() !== ""){
-            setTasks(t => [...t, newTask])
+            const taskID = crypto.randomUUID();
+            setTasks(t => [...t, {id:taskID, text: newTask, finished: false}])
             setNewTask("")
         }
     }
@@ -29,10 +32,9 @@ function ToDoList(){
     }
 
     // Delete task at index when delete-button is pressed
-    function deleteTask(index){
-        const updatedTasks = tasks.filter((_, i) => i !== index);
+    function deleteTask(taskID){
+        const updatedTasks = tasks.filter((task) => task.id !== taskID);
         setTasks(updatedTasks);
-
     }
 
     // Move task up to higher priority on list when up button is pressed
@@ -52,6 +54,16 @@ function ToDoList(){
             setTasks(updatedTasks);
         }
     }
+
+
+    function toggleFinished(taskID) {
+        const updatedTasks = tasks.map(task =>
+    task.id === taskID ? { ...task, finished: !task.finished } : task);
+        console.log("SEURAAVA ON TOGGLE FINISHED")
+        console.log(tasks)
+        setTasks(updatedTasks)
+    }
+
 
     // the HTML code for this thing
     return(
@@ -78,12 +90,16 @@ function ToDoList(){
             </div>
 
             <o1>
-                {tasks.map((task, index)=>
+                {tasks.filter(t => !t.finished).map((task, index)=>
                     <li key={index}>
-                        <span className='text'>{task}</span>
+                        <span className='text'>{task.text}</span>
+                        <input 
+                            type='checkbox'
+                            checked={task.finished}
+                            onChange={() => toggleFinished(task.id)}/>
                         <button 
                             className='delete-button'
-                            onClick={() => deleteTask(index)}>
+                            onClick={() => deleteTask(task.id)}>
                             Delete
                         </button>
                         <button 
@@ -95,6 +111,22 @@ function ToDoList(){
                             className='move-button'
                             onClick={() =>moveTaskDown(index)}>
                             Down
+                        </button>
+                    </li>)}
+            </o1>
+            <h3>Finished Tasks</h3>
+            <o1>
+                {tasks.filter(t => t.finished).map((task, index)=>
+                    <li key={index}>
+                        <span className='text'>{task.text}</span>
+                        <input 
+                            type='checkbox'
+                            checked={task.finished}
+                            onChange={() => toggleFinished(task.id)}/>
+                        <button 
+                            className='delete-button'
+                            onClick={() => deleteTask(task.id)}>
+                            Delete
                         </button>
                     </li>)}
             </o1>
