@@ -7,7 +7,7 @@ what functions:
 - deleting a task
 - moving it in priority
 - the starting point of aesthetics (yay!)
-- somewhat functional backend done with axios --> currently breaks priority movement of tasks, so in progress?
+- server done with axios
 - "finished tasks"
   
 What is on the list?
