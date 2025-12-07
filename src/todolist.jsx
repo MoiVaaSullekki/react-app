@@ -32,13 +32,13 @@ function ToDoList(){
     function addTask(){
 
         if(newTask.trim() !== ""){
-            const maxIndex = tasks.length
-            ? Math.max(...tasks.map(t => t.index))
+            const maxPriority = tasks.length
+            ? Math.max(...tasks.map(t => t.priority))
             : 0;
 
-            console.log(maxIndex)
+            console.log(maxPriority)
             taskService
-            .create({text: newTask, finished: false, index: maxIndex+1})
+            .create({text: newTask, finished: false, priority: maxPriority+1})
             .then(returnedTask => {
                 console.log(returnedTask);
                 setTasks(tasks.concat(returnedTask));
@@ -53,12 +53,12 @@ function ToDoList(){
     // Add task to list if text-box is not empty and enter is pressed
     function addTaskEnter(event){
         if(newTask.trim() !== "" && event.key === 'Enter'){
-            const maxIndex = tasks.length
-            ? Math.max(...tasks.map(t => t.index))
+            const maxPriority = tasks.length
+            ? Math.max(...tasks.map(t => t.priority))
             : 0;
 
             taskService
-            .create({text: newTask, finished: false, index: maxIndex+1})
+            .create({text: newTask, finished: false, priority: maxPriority+1})
             .then(returnedTask => {
                 console.log(returnedTask);
                 setTasks(tasks.concat(returnedTask));
@@ -76,11 +76,11 @@ function ToDoList(){
         taskService.taskDeletion(taskID)
             .then( returned => {
                 const updated = tasks.filter(t => t.id !== taskID)
-                .map((task, index) => ({ ...task, index }));
+                .map((task, priority) => ({ ...task, priority }));
                 
                 // Sync changes back to server
                 updated.forEach(task => {
-                    axios.patch(`http://localhost:3001/tasks/${task.id}`, { index: task.index });
+                    axios.patch(`http://localhost:3001/tasks/${task.id}`, { priority: task.priority });
                 });
                 setTasks(updated);
             })
@@ -94,15 +94,15 @@ function ToDoList(){
     function moveTaskUp(taskID, pos) {
 
         const upTask = tasks.find(t => t.id === taskID);
-        if (!upTask || upTask.index === 0) return; 
+        if (!upTask || upTask.priority === 0) return; 
 
         // find the task above in the listing
-          const aboveTask = tasks.find(t => t.index === upTask.index - 1);
+          const aboveTask = tasks.find(t => t.priority === upTask.priority - 1);
         if (!aboveTask) return;
 
         // update the task indeces
-        const updatedTask = { ...upTask, index: aboveTask.index};
-        const updatedAbove = { ...aboveTask, index: pos};
+        const updatedTask = { ...upTask, priority: aboveTask.priority};
+        const updatedAbove = { ...aboveTask, priority: pos};
         
         Promise.all([
             taskService.update(taskID, updatedTask),
@@ -129,12 +129,12 @@ function ToDoList(){
         if (!downTask || downTask.index === tasks.length -1) return; 
 
         // find the task above in the listing
-          const belowTask = tasks.find(t => t.index === downTask.index + 1);
+          const belowTask = tasks.find(t => t.priority === downTask.priority + 1);
         if (!belowTask) return;
 
         // update the task indeces
-        const updatedTask = { ...downTask, index: belowTask.index};
-        const updatedAbove = { ...belowTask, index: pos};
+        const updatedTask = { ...downTask, priority: belowTask.priority};
+        const updatedAbove = { ...belowTask, priority: pos};
         
         Promise.all([
             taskService.update(taskID, updatedTask),
@@ -196,7 +196,7 @@ function ToDoList(){
             </div>
 
             <o1>
-                {tasks.filter(t => !t.finished).sort((a, b) => a.index - b.index).map((task, index)=>
+                {tasks.filter(t => !t.finished).sort((a, b) => a.priority - b.priority).map((task, index)=>
                     <li key={index}>
                         <span className='text'>{task.text}</span>
                         <input 

@@ -4,19 +4,19 @@
       "id": "2",
       "text": "Walk the camel",
       "finished": false,
-      "index": 0
+      "priority": 0
     },
     {
       "id": "4591",
       "text": "guugugug",
       "finished": false,
-      "index": 2
+      "priority": 2
     },
     {
       "id": "b9a1",
       "text": "asdasda",
       "finished": false,
-      "index": 1
+      "priority": 1
     }
   ]
 }
